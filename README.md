@@ -25,10 +25,10 @@ Provider dicoba secara berurutan sesuai `SEARCH_PROVIDER`. Jika satu gagal, fall
 Contoh:
 ```bash
 # Tanpa provider (fallback otomatis)
-curl -H "Authorization: Bearer <token>" "https://search.nex.my.id/search?q=golang"
+curl -H "Authorization: Bearer <token>" "https://<domain>/search?q=golang"
 
 # Pilih provider spesifik
-curl -H "Authorization: Bearer <token>" "https://search.nex.my.id/search?q=golang&provider=brave"
+curl -H "Authorization: Bearer <token>" "https://<domain>/search?q=golang&provider=brave"
 ```
 
 ### MCP (Model Context Protocol)
@@ -48,13 +48,13 @@ Parameter:
 Contoh:
 ```bash
 # List tools
-curl -X POST "https://search.nex.my.id/mcp" \
+curl -X POST "https://<domain>/mcp" \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
 
 # Panggil search dengan provider tertentu
-curl -X POST "https://search.nex.my.id/mcp" \
+curl -X POST "https://<domain>/mcp" \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"search_web","arguments":{"query":"golang","provider":"tavily"}}}'
@@ -66,7 +66,7 @@ curl -X POST "https://search.nex.my.id/mcp" \
 {
   "mcpServers": {
     "search-api": {
-      "url": "https://search.nex.my.id/mcp",
+      "url": "https://<domain>/mcp",
       "headers": {
         "Authorization": "Bearer dev-secret-token"
       }
@@ -87,7 +87,7 @@ FIRECRAWL_API_KEY=your_firecrawl_key
 SEARCH_PROVIDER=duckduckgo,brave,tavily,firecrawl
 ```
 
-Default: `API_TOKEN=dev-secret-token` (jika tidak diset).
+Default `API_TOKEN` di kode fallback ke `dev-secret-token` (hanya untuk development).
 
 ## Run Lokal
 
@@ -116,7 +116,7 @@ ssh user@host "sudo systemctl restart search-api"
 ### Caddy
 
 ```
-https://search.nex.my.id {
+https://<domain> {
     encode zstd gzip
     reverse_proxy :8080
 }
