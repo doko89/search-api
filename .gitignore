@@ -1,5 +1,6 @@
-# Local env
+# Local env & config
 .env
+opencode.json
 
 # Go binaries
 *.out
