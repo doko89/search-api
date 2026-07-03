@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -27,6 +28,16 @@ func main() {
 	godotenv.Load()
 
 	apiToken = getEnv("API_TOKEN", "dev-secret-token")
+
+	logFile := getEnv("LOG_FILE", "")
+	if logFile != "" {
+		f, err := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+		if err != nil {
+			log.Fatalf("failed to open log file %s: %v", logFile, err)
+		}
+		log.SetOutput(io.MultiWriter(os.Stdout, f))
+		log.Printf("logging to %s", logFile)
+	}
 
 	searchClient = search.NewClient(
 		getEnv("BRAVE_API_KEY", ""),
