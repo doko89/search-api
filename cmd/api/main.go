@@ -65,12 +65,12 @@ func handleSearch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	q := strings.TrimSpace(r.URL.Query().Get("q"))
+	provider := strings.TrimSpace(r.URL.Query().Get("provider"))
+	log.Printf("search query=%q provider=%q", q, provider)
 	if q == "" {
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "query parameter 'q' is required"})
 		return
 	}
-
-	provider := strings.TrimSpace(r.URL.Query().Get("provider"))
 
 	var results []search.Result
 	var err error

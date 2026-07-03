@@ -118,6 +118,7 @@ func (h *Handler) handleToolsCall(w http.ResponseWriter, req *JSONRPCRequest) {
 	}
 
 	query, ok := params.Arguments["query"].(string)
+	log.Printf("search_web query=%q provider=%v", query, params.Arguments["provider"])
 	if !ok || strings.TrimSpace(query) == "" {
 		writeMCPResult(w, req.ID, CallResult{
 			Content: []Content{{Type: "text", Text: "Error: 'query' parameter is required and must be a string"}},
