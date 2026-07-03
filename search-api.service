@@ -1,0 +1,15 @@
+[Unit]
+Description=Search API
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/apps/search-api
+ExecStart=/apps/search-api/search-api
+Restart=always
+RestartSec=5
+EnvironmentFile=/apps/search-api/.env
+
+[Install]
+WantedBy=multi-user.target

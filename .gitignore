@@ -1,0 +1,11 @@
+# Local env
+.env
+
+# Go binaries
+*.out
+*.test
+*.exe
+/api
+/search-api
+/search-api-linux-arm
+/search-api-linux-arm64

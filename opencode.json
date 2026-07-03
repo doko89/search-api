@@ -1,0 +1,21 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "skill-seeker": {
+      "type": "local",
+      "command": ["/home/doko/repo/Skill_Seekers/venv/bin/python3", "-m", "skill_seekers.mcp.server_fastmcp"],
+      "enabled": true,
+      "environment": {
+        "PYTHONPATH": "/home/doko/repo/Skill_Seekers"
+      }
+    },
+    "search-api": {
+      "type": "remote",
+      "url": "https://search.nex.my.id/mcp",
+      "headers": {
+        "Authorization": "Bearer dev-secret-token"
+      },
+      "enabled": true
+    }
+  }
+}
