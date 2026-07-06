@@ -43,7 +43,8 @@ func main() {
 		getEnv("BRAVE_API_KEY", ""),
 		getEnv("TAVILY_API_KEY", ""),
 		getEnv("FIRECRAWL_API_KEY", ""),
-		getEnv("SEARCH_PROVIDER", "duckduckgo,brave,tavily,firecrawl"),
+		getEnv("EXA_API_KEY", ""),
+		getEnv("SEARCH_PROVIDER", "duckduckgo,brave,tavily,firecrawl,exa"),
 	)
 
 	mcpHandler := mcp.NewHandler(searchClient)

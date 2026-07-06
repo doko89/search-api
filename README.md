@@ -1,6 +1,6 @@
 # Search API
 
-Web search API dengan multi-provider backend (DuckDuckGo, Brave, Tavily, Firecrawl). Mendukung REST API dan MCP (Model Context Protocol) Streamable HTTP Transport.
+Web search API dengan multi-provider backend (DuckDuckGo, Brave, Tavily, Firecrawl, Exa). Mendukung REST API dan MCP (Model Context Protocol) Streamable HTTP Transport.
 
 ## Search Providers
 
@@ -12,6 +12,7 @@ Provider dicoba secara berurutan sesuai `SEARCH_PROVIDER`. Jika satu gagal, fall
 | Brave       | Yes              | ✔ API      | ✔ API |
 | Tavily      | Yes              | ✔ API      | ✔ API |
 | Firecrawl   | Yes              | ✔ API      | ✘ |
+| Exa         | Yes              | ✔ Neural API | ✘ |
 
 ## Endpoints
 
@@ -95,7 +96,8 @@ API_TOKEN=your-secret-token
 BRAVE_API_KEY=your_brave_key
 TAVILY_API_KEY=your_tavily_key
 FIRECRAWL_API_KEY=your_firecrawl_key
-SEARCH_PROVIDER=duckduckgo,brave,tavily,firecrawl
+EXA_API_KEY=your_exa_key
+SEARCH_PROVIDER=duckduckgo,brave,tavily,firecrawl,exa
 ```
 
 Default `API_TOKEN` di kode fallback ke `dev-secret-token` (hanya untuk development).

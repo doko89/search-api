@@ -31,17 +31,18 @@ type Client struct {
 	providers []Provider
 }
 
-func NewClient(braveKey, tavilyKey, firecrawlKey, providerOrder string) *Client {
-	providers := buildProviders(braveKey, tavilyKey, firecrawlKey, providerOrder)
+func NewClient(braveKey, tavilyKey, firecrawlKey, exaKey, providerOrder string) *Client {
+	providers := buildProviders(braveKey, tavilyKey, firecrawlKey, exaKey, providerOrder)
 	return &Client{providers: providers}
 }
 
-func buildProviders(braveKey, tavilyKey, firecrawlKey, order string) []Provider {
+func buildProviders(braveKey, tavilyKey, firecrawlKey, exaKey, order string) []Provider {
 	available := map[string]Provider{
 		"duckduckgo": &DuckDuckGo{},
 		"brave":      &Brave{apiKey: braveKey},
 		"tavily":     &Tavily{apiKey: tavilyKey},
 		"firecrawl":  &Firecrawl{apiKey: firecrawlKey},
+		"exa":        &Exa{apiKey: exaKey},
 	}
 
 	names := strings.Split(order, ",")

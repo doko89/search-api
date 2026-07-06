@@ -87,7 +87,7 @@ func (h *Handler) handleToolsList(w http.ResponseWriter, req *JSONRPCRequest) {
 	tools := []Tool{
 		{
 			Name:        "search_web",
-			Description: "Search the web using DuckDuckGo, Brave, Tavily, or Firecrawl. Returns a list of search results with title, URL, and snippet for each result.",
+			Description: "Search the web using DuckDuckGo, Brave, Tavily, Firecrawl, or Exa. Returns a list of search results with title, URL, and snippet for each result.",
 			InputSchema: InputSchema{
 				Type: "object",
 				Properties: map[string]PropertySchema{
@@ -97,7 +97,7 @@ func (h *Handler) handleToolsList(w http.ResponseWriter, req *JSONRPCRequest) {
 					},
 					"provider": {
 						Type:        "string",
-						Description: "Optional: search provider (duckduckgo, brave, tavily, firecrawl). Default uses ordered fallback.",
+						Description: "Optional: search provider (duckduckgo, brave, tavily, firecrawl, exa). Default uses ordered fallback.",
 					},
 				},
 				Required: []string{"query"},
