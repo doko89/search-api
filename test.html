@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Search API Test</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <div class="max-w-4xl mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">Search API Test</h1>
+
+    <div class="bg-white rounded-xl shadow-sm border p-4 mb-6">
+      <div class="flex gap-3 mb-3">
+        <input id="token" type="text" placeholder="API Token" class="flex-1 px-3 py-2 border rounded-lg text-sm font-mono">
+        <select id="provider" class="px-3 py-2 border rounded-lg text-sm bg-white">
+          <option value="">auto (fallback)</option>
+          <option value="duckduckgo">duckduckgo</option>
+          <option value="brave">brave</option>
+          <option value="tavily">tavily</option>
+          <option value="firecrawl">firecrawl</option>
+        </select>
+      </div>
+      <div class="flex gap-3">
+        <input id="query" type="text" placeholder="Search query..." class="flex-1 px-4 py-2 border rounded-lg">
+        <button id="btn-web" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Web</button>
+        <button id="btn-image" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Images</button>
+      </div>
+    </div>
+
+    <div id="status" class="text-sm text-gray-500 mb-2 hidden"></div>
+    <div id="results" class="space-y-3"></div>
+  </div>
+
+<script>
+const BASE = 'https://search.nex.my.id'
+const ENDPOINTS = { web: '/search', images: '/images' }
+
+const $ = s => document.querySelector(s)
+const $$ = s => document.querySelectorAll(s)
+
+$('#btn-web').onclick = () => search('web')
+$('#btn-image').onclick = () => search('images')
+
+$('#query').onkeydown = e => { if (e.key === 'Enter') search('web') }
+
+async function search(kind) {
+  const q = $('#query').value.trim()
+  const token = $('#token').value.trim()
+  const provider = $('#provider').value
+
+  if (!q) return
+  if (!token) { showStatus('error', 'API Token required'); return }
+
+  const url = `${BASE}${ENDPOINTS[kind]}?q=${encodeURIComponent(q)}${provider ? '&provider='+provider : ''}`
+
+  showStatus('loading', `Fetching ${kind}...`)
+
+  try {
+    const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } })
+    if (!res.ok) { showStatus('error', `${res.status} ${res.statusText}`); return }
+
+    const data = await res.json()
+    const results = data.results
+
+    if (!results || results.length === 0) {
+      showStatus('error', 'No results')
+      return
+    }
+
+    showStatus('ok', `${results.length} results`)
+    renderResults(kind, results)
+  } catch (err) {
+    showStatus('error', err.message)
+  }
+}
+
+function renderResults(kind, results) {
+  const container = $('#results')
+  container.innerHTML = ''
+
+  if (kind === 'images') {
+    results.forEach(r => {
+      const div = document.createElement('div')
+      div.className = 'bg-white rounded-xl shadow-sm border overflow-hidden'
+      div.innerHTML = `
+        <a href="${r.image_url}" target="_blank" class="block aspect-[4/3] bg-gray-100 overflow-hidden">
+          <img src="${r.image_url}" class="w-full h-full object-cover hover:scale-105 transition" loading="lazy"
+               onerror="this.parentElement.innerHTML='<div class=flex-items-center-justify-center-h-full-text-gray-400>failed to load</div>'">
+        </a>
+        <div class="p-3">
+          <a href="${r.url || r.image_url}" target="_blank" class="text-sm font-medium text-blue-700 hover:underline line-clamp-2">${r.title || '(no title)'}</a>
+          <div class="text-xs text-gray-400 truncate mt-1">${r.image_url}</div>
+        </div>
+      `
+      container.appendChild(div)
+    })
+  } else {
+    results.forEach(r => {
+      const div = document.createElement('div')
+      div.className = 'bg-white rounded-xl shadow-sm border p-4'
+      div.innerHTML = `
+        <a href="${r.url}" target="_blank" class="text-lg font-medium text-blue-700 hover:underline">${r.title}</a>
+        <div class="text-xs text-green-700 truncate">${r.url}</div>
+        <div class="text-sm text-gray-600 mt-1 line-clamp-2">${r.snippet}</div>
+      `
+      container.appendChild(div)
+    })
+  }
+}
+
+function showStatus(type, msg) {
+  const el = $('#status')
+  el.className = 'text-sm mb-2 px-3 py-1 rounded ' + (
+    type === 'error' ? 'bg-red-100 text-red-700' :
+    type === 'loading' ? 'bg-blue-100 text-blue-700' :
+    'bg-green-100 text-green-700'
+  )
+  el.textContent = msg
+  el.classList.remove('hidden')
+}
+</script>
+</body>
+</html>

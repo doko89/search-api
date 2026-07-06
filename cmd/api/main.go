@@ -49,10 +49,10 @@ func main() {
 	mcpHandler := mcp.NewHandler(searchClient)
 
 	mux := http.NewServeMux()
-	mux.Handle("/mcp", auth(cors(mcpHandler)))
-	mux.Handle("/search", auth(cors(http.HandlerFunc(handleSearch))))
-	mux.Handle("/images", auth(cors(http.HandlerFunc(handleImageSearch))))
-	mux.Handle("/health", auth(cors(http.HandlerFunc(handleHealth))))
+	mux.Handle("/mcp", cors(auth(mcpHandler)))
+	mux.Handle("/search", cors(auth(http.HandlerFunc(handleSearch))))
+	mux.Handle("/images", cors(auth(http.HandlerFunc(handleImageSearch))))
+	mux.Handle("/health", cors(auth(http.HandlerFunc(handleHealth))))
 
 	addr := ":8080"
 	log.Printf("search api listening on %s", addr)
