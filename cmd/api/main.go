@@ -51,11 +51,49 @@ func main() {
 	mux := http.NewServeMux()
 	mux.Handle("/mcp", auth(cors(mcpHandler)))
 	mux.Handle("/search", auth(cors(http.HandlerFunc(handleSearch))))
+	mux.Handle("/images", auth(cors(http.HandlerFunc(handleImageSearch))))
 	mux.Handle("/health", auth(cors(http.HandlerFunc(handleHealth))))
 
 	addr := ":8080"
 	log.Printf("search api listening on %s", addr)
 	log.Fatal(http.ListenAndServe(addr, mux))
+}
+
+func handleImageSearch(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		writeJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "method not allowed"})
+		return
+	}
+
+	q := strings.TrimSpace(r.URL.Query().Get("q"))
+	provider := strings.TrimSpace(r.URL.Query().Get("provider"))
+	log.Printf("image search query=%q provider=%q", q, provider)
+	if q == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "query parameter 'q' is required"})
+		return
+	}
+
+	var results []search.ImageResult
+	var err error
+	if provider != "" {
+		results, err = searchClient.SearchImageFrom(q, provider)
+	} else {
+		results, err = searchClient.SearchImage(q)
+	}
+	if err != nil {
+		log.Printf("image search error: %v", err)
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "image search failed"})
+		return
+	}
+
+	if results == nil {
+		results = []search.ImageResult{}
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"query":   q,
+		"results": results,
+	})
 }
 
 func handleSearch(w http.ResponseWriter, r *http.Request) {

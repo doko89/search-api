@@ -15,6 +15,8 @@ const ProtocolVersion = "2026-07-28"
 type Searcher interface {
 	Search(query string) ([]search.Result, error)
 	SearchFrom(query, provider string) ([]search.Result, error)
+	SearchImage(query string) ([]search.ImageResult, error)
+	SearchImageFrom(query, provider string) ([]search.ImageResult, error)
 }
 
 type Handler struct {
@@ -101,6 +103,24 @@ func (h *Handler) handleToolsList(w http.ResponseWriter, req *JSONRPCRequest) {
 				Required: []string{"query"},
 			},
 		},
+		{
+			Name:        "search_images",
+			Description: "Search for images using Brave or Tavily. Returns a list of image results with title, URL, and image_url for each result.",
+			InputSchema: InputSchema{
+				Type: "object",
+				Properties: map[string]PropertySchema{
+					"query": {
+						Type:        "string",
+						Description: "The search query string",
+					},
+					"provider": {
+						Type:        "string",
+						Description: "Optional: image search provider (brave, tavily). Default uses ordered fallback.",
+					},
+				},
+				Required: []string{"query"},
+			},
+		},
 	}
 	writeMCPResult(w, req.ID, map[string]any{"tools": tools})
 }
@@ -112,11 +132,17 @@ func (h *Handler) handleToolsCall(w http.ResponseWriter, req *JSONRPCRequest) {
 		return
 	}
 
-	if params.Name != "search_web" {
+	switch params.Name {
+	case "search_web":
+		h.handleSearchWeb(w, req, params)
+	case "search_images":
+		h.handleSearchImages(w, req, params)
+	default:
 		writeMCPError(w, req.ID, -32602, fmt.Sprintf("unknown tool: %s", params.Name))
-		return
 	}
+}
 
+func (h *Handler) handleSearchWeb(w http.ResponseWriter, req *JSONRPCRequest, params CallParams) {
 	query, ok := params.Arguments["query"].(string)
 	log.Printf("search_web query=%q provider=%v", query, params.Arguments["provider"])
 	if !ok || strings.TrimSpace(query) == "" {
@@ -130,6 +156,7 @@ func (h *Handler) handleToolsCall(w http.ResponseWriter, req *JSONRPCRequest) {
 	provider, _ := params.Arguments["provider"].(string)
 
 	var results []search.Result
+	var err error
 	if provider != "" {
 		results, err = h.searcher.SearchFrom(query, provider)
 	} else {
@@ -157,6 +184,57 @@ func (h *Handler) handleToolsCall(w http.ResponseWriter, req *JSONRPCRequest) {
 		sb.WriteString(fmt.Sprintf("## %d. %s\n", i+1, r.Title))
 		sb.WriteString(fmt.Sprintf("**URL:** %s\n", r.URL))
 		sb.WriteString(fmt.Sprintf("%s\n\n", r.Snippet))
+	}
+
+	writeMCPResult(w, req.ID, CallResult{
+		Content: []Content{{Type: "text", Text: sb.String()}},
+	})
+}
+
+func (h *Handler) handleSearchImages(w http.ResponseWriter, req *JSONRPCRequest, params CallParams) {
+	query, ok := params.Arguments["query"].(string)
+	log.Printf("search_images query=%q provider=%v", query, params.Arguments["provider"])
+	if !ok || strings.TrimSpace(query) == "" {
+		writeMCPResult(w, req.ID, CallResult{
+			Content: []Content{{Type: "text", Text: "Error: 'query' parameter is required and must be a string"}},
+			IsError: true,
+		})
+		return
+	}
+
+	provider, _ := params.Arguments["provider"].(string)
+
+	var results []search.ImageResult
+	var err error
+	if provider != "" {
+		results, err = h.searcher.SearchImageFrom(query, provider)
+	} else {
+		results, err = h.searcher.SearchImage(query)
+	}
+	if err != nil {
+		log.Printf("image search error: %v", err)
+		writeMCPResult(w, req.ID, CallResult{
+			Content: []Content{{Type: "text", Text: fmt.Sprintf("Error: image search failed: %s", err.Error())}},
+			IsError: true,
+		})
+		return
+	}
+
+	if len(results) == 0 {
+		writeMCPResult(w, req.ID, CallResult{
+			Content: []Content{{Type: "text", Text: fmt.Sprintf("No image results found for '%s'", query)}},
+		})
+		return
+	}
+
+	var sb strings.Builder
+	sb.WriteString(fmt.Sprintf("# Image results for '%s'\n\n", query))
+	for i, r := range results {
+		sb.WriteString(fmt.Sprintf("## %d. %s\n", i+1, r.Title))
+		if r.URL != "" {
+			sb.WriteString(fmt.Sprintf("**URL:** %s\n", r.URL))
+		}
+		sb.WriteString(fmt.Sprintf("**Image URL:** %s\n", r.ImageURL))
 	}
 
 	writeMCPResult(w, req.ID, CallResult{

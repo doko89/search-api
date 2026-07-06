@@ -6,12 +6,12 @@ Web search API dengan multi-provider backend (DuckDuckGo, Brave, Tavily, Firecra
 
 Provider dicoba secara berurutan sesuai `SEARCH_PROVIDER`. Jika satu gagal, fallback ke provider berikutnya.
 
-| Provider    | Requires API Key | Type      |
-|-------------|------------------|-----------|
-| DuckDuckGo  | No               | HTML scrape |
-| Brave       | Yes              | API       |
-| Tavily      | Yes              | API       |
-| Firecrawl   | Yes              | API       |
+| Provider    | Requires API Key | Web Search | Image Search |
+|-------------|------------------|------------|--------------|
+| DuckDuckGo  | No               | ✔ HTML scrape | ✔ Scrape |
+| Brave       | Yes              | ✔ API      | ✔ API |
+| Tavily      | Yes              | ✔ API      | ✔ API |
+| Firecrawl   | Yes              | ✔ API      | ✘ |
 
 ## Endpoints
 
@@ -20,6 +20,7 @@ Provider dicoba secara berurutan sesuai `SEARCH_PROVIDER`. Jika satu gagal, fall
 | Method | Path | Description |
 |--------|------|-------------|
 | `GET` | `/search?q=<query>&provider=<name>` | Cari di web |
+| `GET` | `/images?q=<query>&provider=<name>` | Cari gambar (brave/tavily) |
 | `GET` | `/health` | Health check |
 
 Contoh:
@@ -29,6 +30,9 @@ curl -H "Authorization: Bearer <token>" "https://<domain>/search?q=golang"
 
 # Pilih provider spesifik
 curl -H "Authorization: Bearer <token>" "https://<domain>/search?q=golang&provider=brave"
+
+# Cari gambar
+curl -H "Authorization: Bearer <token>" "https://<domain>/images?q=kucing"
 ```
 
 ### MCP (Model Context Protocol)
@@ -40,6 +44,7 @@ curl -H "Authorization: Bearer <token>" "https://<domain>/search?q=golang&provid
 Tool yang tersedia:
 
 - **`search_web`** — Cari web dengan multi-provider
+- **`search_images`** — Cari gambar (brave/tavily)
 
 Parameter:
 - `query` (required) — kata kunci pencarian
@@ -58,6 +63,12 @@ curl -X POST "https://<domain>/mcp" \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"search_web","arguments":{"query":"golang","provider":"tavily"}}}'
+
+# Cari gambar
+curl -X POST "https://<domain>/mcp" \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"search_images","arguments":{"query":"kucing"}}}'
 ```
 
 ### Konfigurasi MCP Client (opencode)
